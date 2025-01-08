@@ -1,3 +1,4 @@
+# Maven build artifacts
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -6,12 +7,36 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/timing.properties
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
-.mvn/wrapper/maven-wrapper.jar
 
-# Eclipse m2e generated files
-# Eclipse Core
+# Maven Wrapper (keep the JAR exception)
+.mvn/timing.properties
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE-specific files
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
 .project
-# JDT-specific (Eclipse Java Development Tools)
 .classpath
+.settings/
+
+### VS Code ###
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# STS (Spring Tool Suite)
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
