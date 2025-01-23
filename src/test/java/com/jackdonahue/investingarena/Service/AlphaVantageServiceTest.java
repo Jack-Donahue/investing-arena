@@ -57,7 +57,7 @@ public class AlphaVantageServiceTest {
         assertEquals("Apple Inc", result.get("Name"));
         assertEquals("2500000000000", result.get("Market Cap"));
         assertEquals(new BigDecimal("28"), result.get("PE Ratio"));
-        assertEquals(new BigDecimal("145.7"), result.get("Previous Close"));
+        assertEquals(new BigDecimal("145.7"), result.get("Price"));
         assertEquals("75000000", result.get("Daily Volume"));
     }
 }

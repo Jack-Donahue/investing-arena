@@ -11,13 +11,17 @@ import java.util.Map;
 @RequestMapping("/api/stocks")
 public class StockController {
     //The service reference to fetch the stock data
-    private final AlphaVantageService avService = new AlphaVantageService();
+    private final AlphaVantageService alphaVantageService;
+
+    public StockController(AlphaVantageService alphaVantageService) {
+        this.alphaVantageService = alphaVantageService;
+    }
 
     //Wrap the output from AlphaVantageService n a ResponseEntity
     @GetMapping("/{symbol}")
     public ResponseEntity<Map<String, Object>> getStock(@PathVariable String ticker) {
         //Call the service and store the output in a map
-        Map<String, Object> vantageData = avService.getStockData(ticker);
+        Map<String, Object> vantageData = alphaVantageService.getStockData(ticker);
 
         //Return Error 404 if not found
         if(vantageData.isEmpty()) {
