@@ -21,9 +21,14 @@ public class AlphaVantageService {
     //Base URL for Alpha Vantage to append queries onto
     private final String baseUrl = "https://www.alphavantage.co/query";
     //Inject RestTemplate into class, responsible for making HTTP requests
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     //Used to convert JSON responses into Java objects
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    //The constructor injects the RestTemplate
+    public AlphaVantageService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     //Function to grab relevant data given the ticker symbol
     //Using Map because it is easy to add/subtract more variables if we choose to
@@ -64,8 +69,5 @@ public class AlphaVantageService {
             System.err.println("Error fetching stock data: " + e.getMessage());
             return Collections.emptyMap();
         }
-
-
     }
-
 }
