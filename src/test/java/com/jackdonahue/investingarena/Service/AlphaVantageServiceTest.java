@@ -38,10 +38,12 @@ public class AlphaVantageServiceTest {
         String response = """
         {
             "Name": "Apple Inc",
-            "MarketCapitalization": "2500000000000",
             "PERatio": "28",
-            "PreviousClose": "145.7",
-            "Volume": "75000000"
+            "MarketCapitalization": "2500000000000",
+            "DividendPerShare": "0.98",
+            "50DayMovingAverage": "208.29",
+            "EPS": "6.03"
+            
         }
         """;
 
@@ -55,9 +57,11 @@ public class AlphaVantageServiceTest {
         //Tests
         assertNotNull(result);
         assertEquals("Apple Inc", result.get("Name"));
-        assertEquals("2500000000000", result.get("Market Cap"));
         assertEquals(new BigDecimal("28"), result.get("PE Ratio"));
-        assertEquals(new BigDecimal("145.7"), result.get("Price"));
-        assertEquals("75000000", result.get("Daily Volume"));
+        assertEquals("2500000000000", result.get("Market Cap"));
+        assertEquals(new BigDecimal("0.98"), result.get("Dividend Per Share"));
+        assertEquals(new BigDecimal("208.29"), result.get("50 Day Moving Average"));
+        assertEquals(new BigDecimal("6.03"), result.get("EPS"));
+
     }
 }

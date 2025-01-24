@@ -41,28 +41,22 @@ public class AlphaVantageService {
             //Parse response into readable Java object
             JsonNode root = objectMapper.readTree(response);
 
-
             //Get relevant data to display to the user
             String name = root.path("Name").asText();
-            String marketCap = root.path("MarketCapitalization").asText();
             BigDecimal peRatio = new BigDecimal(root.path("PERatio").asText("0"));
-            BigDecimal price = new BigDecimal(root.path("PreviousClose").asText("0"));
-            String volume = root.path("Volume").asText();
+            String marketCap = root.path("MarketCapitalization").asText();
+            BigDecimal divPerShare = new BigDecimal(root.path("DividendPerShare").asText("0"));
+            BigDecimal fiftyDayAvg = new BigDecimal(root.path("50DayMovingAverage").asText("0"));
+            BigDecimal eps = new BigDecimal(root.path("EPS").asText("0"));
 
             // Store values in a map to return
             Map<String, Object> stockData = new HashMap<>();
             stockData.put("Name", name);
-            stockData.put("Market Cap", marketCap);
             stockData.put("PE Ratio", peRatio);
-            stockData.put("Price", price);
-            stockData.put("Daily Volume", volume);
-
-            //Print the data for testing
-            System.out.println("Stock Name: " + name);
-            System.out.println("Market Cap: " + marketCap);
-            System.out.println("PE Ratio: " + peRatio);
-            System.out.println("Current Price: $" + price);
-            System.out.println("Daily Volume: " + volume);
+            stockData.put("Market Cap", marketCap);
+            stockData.put("Dividend Per Share", divPerShare);
+            stockData.put("50 Day Moving Average", fiftyDayAvg);
+            stockData.put("EPS", eps);
 
             return stockData;
         } catch (Exception e) {
