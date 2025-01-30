@@ -43,25 +43,50 @@ public class AlphaVantageService {
 
             //Get relevant data to display to the user
             String name = root.path("Name").asText();
+            BigDecimal price = getPrice(ticker);
             BigDecimal peRatio = new BigDecimal(root.path("PERatio").asText("0"));
             String marketCap = root.path("MarketCapitalization").asText();
             BigDecimal divPerShare = new BigDecimal(root.path("DividendPerShare").asText("0"));
             BigDecimal fiftyDayAvg = new BigDecimal(root.path("50DayMovingAverage").asText("0"));
-            BigDecimal eps = new BigDecimal(root.path("EPS").asText("0"));
 
             // Store values in a map to return
             Map<String, Object> stockData = new HashMap<>();
             stockData.put("Name", name);
+            stockData.put("Price", price);
             stockData.put("PE Ratio", peRatio);
             stockData.put("Market Cap", marketCap);
             stockData.put("Dividend Per Share", divPerShare);
             stockData.put("50 Day Moving Average", fiftyDayAvg);
-            stockData.put("EPS", eps);
 
             return stockData;
         } catch (Exception e) {
             System.err.println("Error fetching stock data: " + e.getMessage());
             return Collections.emptyMap();
+        }
+    }
+
+    // Fetch the real-time stock price
+    private BigDecimal getPrice(String ticker) {
+        //Create url for 1 min interval of the ticker
+        String url = baseUrl + "?function=TIME_SERIES_INTRADAY&symbol=" + ticker
+                + "&interval=1min&apikey=" + apiKey;
+        try {
+            //Get the response from AlphaVantage
+            String response = restTemplate.getForObject(url, String.class);
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode timeSeries = root.path("Time Series (1min)");
+
+            if (timeSeries.isObject() && timeSeries.size() > 0) {
+                // Get the most recent entry
+                String latestTime = timeSeries.fieldNames().next();
+                double currentPrice = timeSeries.get(latestTime).path("4. close").asDouble();
+                return BigDecimal.valueOf(currentPrice);
+            } else {
+                return BigDecimal.ZERO;
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching stock price: " + e.getMessage());
+            return BigDecimal.ZERO;
         }
     }
 }
