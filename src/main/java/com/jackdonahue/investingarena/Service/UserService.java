@@ -1,9 +1,14 @@
 package com.jackdonahue.investingarena.Service;
 
+import com.jackdonahue.investingarena.Model.Stock;
 import com.jackdonahue.investingarena.Model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -36,8 +41,9 @@ public class UserService {
     //Adds the amount of the stock to the user's portfolio. If the user doesn't have this stock,
     //It will be initialized with the given amount. Also check to make sure user has sufficient funds
     public boolean buy(String username, String ticker, int amt, double price) {
-        //Get the user and the total cost of the stock the user wants to buy
         User user = getUser(username);
+        Map<String, Stock> portfolio = user.getPortfolio();
+        Stock stock = portfolio.get(ticker);
         double cost = price * amt;
 
         //Check for sufficient funds
@@ -45,11 +51,24 @@ public class UserService {
             System.out.println("Insufficient funds to purchase " + amt + " shares of " + ticker);
             return false;
         }
-        //Set the new balance of the user, add the stock to the user's portfolio, and update the user's data to redis
+        //Set the new balance of the user
         user.setBalance(user.getBalance() - cost);
-        user.getPortfolio().put(ticker, user.getPortfolio().getOrDefault(ticker, 0) + amt);
+        //If the stock already exists, overwrite the new quantity and averagePrice
+        //If not, create a new Stock instance and add it to the portfolio
+        //Update the portfolio and save the new data to redis
+        if(stock != null) {
+            int shares = stock.getShares();
+            stock.setShares(shares + amt);
+            BigDecimal oldSum = stock.getAveragePrice().multiply(BigDecimal.valueOf(shares));
+            BigDecimal newSum = BigDecimal.valueOf(amt).multiply(BigDecimal.valueOf(price));
+            BigDecimal newAverage = (oldSum.add(newSum)).divide(BigDecimal.valueOf(stock.getShares()));
+            stock.setAveragePrice(newAverage);
+            portfolio.put(ticker, stock);
+        } else {
+            Stock newStock = new Stock(ticker, amt, BigDecimal.valueOf(price));
+            portfolio.put(ticker, newStock);
+        }
         redisTemplate.opsForValue().set("user:" + username, user);
-
         return true;
     }
 
@@ -57,9 +76,17 @@ public class UserService {
     //portfolio, is the amount correct, and also updates the user's balance
     public boolean sell(String username, String ticker, int amt, double price) {
         User user = getUser(username);
-        //Checks for invalid requests
-        if (!user.getPortfolio().containsKey(ticker) || user.getPortfolio().get(ticker) < amt) {
-            System.out.println("You have either entered the wrong ticker symbol or you don't have this stock in your portfolio");
+        Map<String, Stock> portfolio = user.getPortfolio();
+        Stock stock = portfolio.get(ticker);
+
+        //Check for invalid symbol
+        if(!portfolio.containsKey(ticker)) {
+            System.out.println("You do not have " + ticker + " in your portfolio.");
+            return false;
+        }
+        //Check for invalid sell amount
+        if(amt > stock.getShares()) {
+            System.out.println("You have less than " + amt + " shares of " + ticker + " in your portfolio.");
             return false;
         }
         //Set the new balance
@@ -67,11 +94,12 @@ public class UserService {
         user.setBalance(user.getBalance() + total);
 
         //Updates the portfolio, possibly removing the ticker if the user sold all shares
-        int remainder = user.getPortfolio().get(ticker) - amt;
+        int remainder = stock.getShares() - amt;
         if (remainder == 0) {
-            user.getPortfolio().remove(ticker);
+            portfolio.remove(ticker);
         } else {
-            user.getPortfolio().put(ticker, remainder);
+            stock.setShares(remainder);
+            portfolio.put(ticker, stock);
         }
         //Updates the user data to redis
         redisTemplate.opsForValue().set("user:" + username, user);

@@ -4,10 +4,7 @@ import com.jackdonahue.investingarena.Service.AlphaVantageService;
 import com.jackdonahue.investingarena.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -46,12 +43,12 @@ public class UserController {
 
         boolean success = userService.sell(username, ticker, amt, price);
 
-        if(success) {
+        if (success) {
             return ResponseEntity.ok("Your order to sell " + amt + " shares of $" + ticker +
                     " has been filled at the share price of $" + price + "!.");
         } else {
             return ResponseEntity.badRequest().body("Your order to sell shares of $" + ticker +
                     " is unsuccessful please try again.");
         }
-    )
+    }
 }

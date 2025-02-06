@@ -8,7 +8,7 @@ public class User {
     private double balance;
 
     //Key is the stock ticker and the Integer is the amount owned
-    private Map<String, Integer> portfolio;
+    private Map<String, Stock> portfolio;
 
     //Constructor
     public User(String username) {
@@ -34,11 +34,11 @@ public class User {
         this.balance = balance;
     }
 
-    public Map<String, Integer> getPortfolio() {
+    public Map<String, Stock> getPortfolio() {
         return portfolio;
     }
 
-    public void setPortfolio(Map<String, Integer> portfolio) {
+    public void setPortfolio(Map<String, Stock> portfolio) {
         this.portfolio = portfolio;
     }
 }

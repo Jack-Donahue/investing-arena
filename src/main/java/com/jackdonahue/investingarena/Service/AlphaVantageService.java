@@ -35,34 +35,24 @@ public class AlphaVantageService {
     public Map<String, Object> getStockData(String ticker) {
         //Create the URL using the ticker and the API key
         String url = baseUrl + "?function=OVERVIEW&symbol=" + ticker + "&apikey=" + apiKey;
+        Map<String, Object> stockData = new HashMap<>();
         try {
             //Handle Http response
             String response = restTemplate.getForObject(url, String.class);
             //Parse response into readable Java object
             JsonNode root = objectMapper.readTree(response);
 
-            //Get relevant data to display to the user
-            String name = root.path("Name").asText();
-            BigDecimal price = getPrice(ticker);
-            BigDecimal peRatio = new BigDecimal(root.path("PERatio").asText("0"));
-            String marketCap = root.path("MarketCapitalization").asText();
-            BigDecimal divPerShare = new BigDecimal(root.path("DividendPerShare").asText("0"));
-            BigDecimal fiftyDayAvg = new BigDecimal(root.path("50DayMovingAverage").asText("0"));
-
-            // Store values in a map to return
-            Map<String, Object> stockData = new HashMap<>();
-            stockData.put("Name", name);
-            stockData.put("Price", price);
-            stockData.put("PE Ratio", peRatio);
-            stockData.put("Market Cap", marketCap);
-            stockData.put("Dividend Per Share", divPerShare);
-            stockData.put("50 Day Moving Average", fiftyDayAvg);
-
-            return stockData;
+            // Store relevant data in a map to return
+            stockData.put("Name", root.path("Name").asText());
+            stockData.put("Price", getPrice(ticker));
+            stockData.put("PE Ratio", new BigDecimal(root.path("PERatio").asText("0")));
+            stockData.put("Market Cap", root.path("MarketCapitalization").asText());
+            stockData.put("Dividend Per Share", new BigDecimal(root.path("DividendPerShare").asText("0")));
+            stockData.put("50 Day Moving Average", new BigDecimal(root.path("50DayMovingAverage").asText("0")));
         } catch (Exception e) {
             System.err.println("Error fetching stock data: " + e.getMessage());
-            return Collections.emptyMap();
         }
+        return stockData;
     }
 
     // Fetch the real-time stock price
@@ -81,12 +71,10 @@ public class AlphaVantageService {
                 String latestTime = timeSeries.fieldNames().next();
                 double currentPrice = timeSeries.get(latestTime).path("4. close").asDouble();
                 return BigDecimal.valueOf(currentPrice);
-            } else {
-                return BigDecimal.ZERO;
             }
         } catch (Exception e) {
             System.err.println("Error fetching stock price: " + e.getMessage());
-            return BigDecimal.ZERO;
         }
+        return BigDecimal.ZERO;
     }
 }
