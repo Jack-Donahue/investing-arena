@@ -20,7 +20,6 @@ public class UserService {
         String key = "user:" + user.getUsername();
         //Checking for duplicates
         if(redisTemplate.hasKey(key)) {
-            System.out.println("Username already exists, please try another one");
             return false;
         }
         redisTemplate.opsForValue().set(key, user);
@@ -42,8 +41,8 @@ public class UserService {
     //It will be initialized with the given amount. Also check to make sure user has sufficient funds
     public boolean buy(String username, String ticker, int amt, double price) {
         User user = getUser(username);
-        Map<String, Stock> portfolio = user.getPortfolio();
-        Stock stock = portfolio.get(ticker);
+        Map<String, Stock> stocks = user.getPortfolio().getStocks();
+        Stock stock = stocks.get(ticker);
         double cost = price * amt;
 
         //Check for sufficient funds
@@ -63,10 +62,10 @@ public class UserService {
             BigDecimal newSum = BigDecimal.valueOf(amt).multiply(BigDecimal.valueOf(price));
             BigDecimal newAverage = (oldSum.add(newSum)).divide(BigDecimal.valueOf(stock.getShares()));
             stock.setAveragePrice(newAverage);
-            portfolio.put(ticker, stock);
+            stocks.put(ticker, stock);
         } else {
             Stock newStock = new Stock(ticker, amt, BigDecimal.valueOf(price));
-            portfolio.put(ticker, newStock);
+            stocks.put(ticker, newStock);
         }
         redisTemplate.opsForValue().set("user:" + username, user);
         return true;
@@ -76,11 +75,11 @@ public class UserService {
     //portfolio, is the amount correct, and also updates the user's balance
     public boolean sell(String username, String ticker, int amt, double price) {
         User user = getUser(username);
-        Map<String, Stock> portfolio = user.getPortfolio();
-        Stock stock = portfolio.get(ticker);
+        Map<String, Stock> stocks = user.getPortfolio().getStocks();
+        Stock stock = stocks.get(ticker);
 
         //Check for invalid symbol
-        if(!portfolio.containsKey(ticker)) {
+        if(!stocks.containsKey(ticker)) {
             System.out.println("You do not have " + ticker + " in your portfolio.");
             return false;
         }
@@ -96,10 +95,10 @@ public class UserService {
         //Updates the portfolio, possibly removing the ticker if the user sold all shares
         int remainder = stock.getShares() - amt;
         if (remainder == 0) {
-            portfolio.remove(ticker);
+            stocks.remove(ticker);
         } else {
             stock.setShares(remainder);
-            portfolio.put(ticker, stock);
+            stocks.put(ticker, stock);
         }
         //Updates the user data to redis
         redisTemplate.opsForValue().set("user:" + username, user);

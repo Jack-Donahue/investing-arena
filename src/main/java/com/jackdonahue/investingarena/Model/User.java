@@ -6,15 +6,15 @@ import java.util.Map;
 public class User {
     private String username;
     private double balance;
-
-    //Key is the stock ticker and the Integer is the amount owned
-    private Map<String, Stock> portfolio;
+    private Portfolio portfolio;
+    private Map<String, Stock> stocks;
 
     //Constructor
     public User(String username) {
         this.username = username;
         this.balance = 10000;
-        this.portfolio = new HashMap<>();
+        this.stocks = new HashMap<String, Stock>();
+        this.portfolio = new Portfolio(stocks);
     }
 
     //Getters and Setters
@@ -34,11 +34,11 @@ public class User {
         this.balance = balance;
     }
 
-    public Map<String, Stock> getPortfolio() {
+    public Portfolio getPortfolio() {
         return portfolio;
     }
 
-    public void setPortfolio(Map<String, Stock> portfolio) {
+    public void setPortfolio(Portfolio portfolio) {
         this.portfolio = portfolio;
     }
 }
