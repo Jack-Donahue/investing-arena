@@ -2,34 +2,40 @@ package com.jackdonahue.investingarena.Controller;
 
 import com.jackdonahue.investingarena.Model.User;
 import com.jackdonahue.investingarena.Service.UserService;
+import org.aspectj.apache.bcel.classfile.ExceptionTable;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 //Testing the web layer without starting an entire server
 @AutoConfigureMockMvc
 public class UserControllerTest {
-    //Injecting the MockMvc to simulate an HTTP request
+    //Injecting the MockMvc to simulate an HTTP request, essentially acting as the UserController
     @Autowired
     private MockMvc mockMvc;
     //Mocks the userService, used so that you don't interact with real databases
-    @Mock
+    @MockitoBean
     private UserService userService;
+
+    @InjectMocks
+    private UserController userController;
 
     @BeforeEach
     void setUp() {
@@ -67,6 +73,28 @@ public class UserControllerTest {
     //Testing the successful retrieval of a user
     @Test
     void testGetUser_Success() throws Exception {
-        
+        String username = "donny";
+        User user = new User(username);
+
+        //Mock the userService to return a user
+        when(userService.getUser(username)).thenReturn(user);
+
+        //Simulate an HTTP GET request, username is the parameter, it checks the username and expects a 200 response
+        mockMvc.perform(get("/user/{username}", username))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(username));
+    }
+
+    //Testing to get a User that does not exist
+    @Test
+    void testGetUser_NotFound() throws Exception {
+        String username = "nonExistent";
+
+        //Mock the username to return a user
+        when(userService.getUser(username)).thenReturn(null);
+
+        //Simulate an HTTP GET request, username is the parameter, it checks the username and should get a not found response
+        mockMvc.perform(get("/user/{username}", username))
+                .andExpect(status().isNotFound());
     }
 }

@@ -24,7 +24,7 @@ public class UserController {
 
     //Endpoint to creating a user
     @PostMapping("/create")
-    public ResponseEntity<String> create(
+    public ResponseEntity<String> create (
             @RequestParam String username) {
         User user = new User(username);
         boolean success = userService.saveUser(user);
