@@ -49,6 +49,7 @@ public class AlphaVantageService {
             stockData.put("Market Cap", root.path("MarketCapitalization").asText());
             stockData.put("Dividend Per Share", new BigDecimal(root.path("DividendPerShare").asText("0")));
             stockData.put("50 Day Moving Average", new BigDecimal(root.path("50DayMovingAverage").asText("0")));
+            stockData.put("EPS", new BigDecimal(root.path("EPS").asText("0")));
         } catch (Exception e) {
             System.err.println("Error fetching stock data: " + e.getMessage());
         }
